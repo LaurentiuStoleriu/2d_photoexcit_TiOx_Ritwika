@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+//#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include "alglibmisc.h"
 #include <algorithm>
@@ -47,12 +47,12 @@ using namespace alglib;
     int noOfNeighbours[nPart];
     double tempAtBegin[nPart];
 
-//     char sysFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06.dat";
-//     char sysFileExcited[500] = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_r02_d06_excit.dat";
-//     char rezFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_T2600_f0.dat";
-    char sysFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\1000x1000_r02_d06.dat";
-    char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\1000x1000_r02_d06_excit.dat";
-    char rezFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\1000x1000_T2600_f0.dat";
+    char sysFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06.dat";
+    char sysFileExcited[500] = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_r02_d06_excit.dat";
+    char rezFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_T2600_f0.dat";
+//     char sysFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\1000x1000_r02_d06.dat";
+//     char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\1000x1000_r02_d06_excit.dat";
+//     char rezFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\1000x1000_T2600_f0.dat";
 
 
 /////////////////////////////////////////// Prototypes
