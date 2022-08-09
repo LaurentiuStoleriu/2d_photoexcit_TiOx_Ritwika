@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="2d_photoexcit_TiOx_Ritwika.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="alglibinternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -25,6 +22,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generate_version2d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

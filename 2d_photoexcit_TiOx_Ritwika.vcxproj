@@ -139,10 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="2d_photoexcit_TiOx_Ritwika.cpp" />
     <ClCompile Include="alglibinternal.cpp" />
     <ClCompile Include="alglibmisc.cpp" />
     <ClCompile Include="ap.cpp" />
+    <ClCompile Include="generate_version2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alglibinternal.h" />
