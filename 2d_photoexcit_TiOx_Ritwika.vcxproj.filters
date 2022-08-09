@@ -24,7 +24,7 @@
     <ClCompile Include="ap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generate_version2d.cpp">
+    <ClCompile Include="generate_version3d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
