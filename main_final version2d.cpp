@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include "alglibmisc.h"
 #include <algorithm>
@@ -6,8 +7,8 @@
 
 using namespace alglib;
 
-    const int nPart = 40000;
-    const int nSide = 200;
+    const int nPart = 1000000;
+    const int nSide = 1000;
     const int nMaxNeigh = 4;
 
     const int nMaxSteps = 1000000;
@@ -46,9 +47,13 @@ using namespace alglib;
     int noOfNeighbours[nPart];
     double tempAtBegin[nPart];
 
-    char sysFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06.dat";
-    char sysFileExcited[500] = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_r02_d06_excit.dat";
-    char rezFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_T2600_f0.dat";
+//     char sysFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06.dat";
+//     char sysFileExcited[500] = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_r02_d06_excit.dat";
+//     char rezFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_T2600_f0.dat";
+    char sysFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\1000x1000_r02_d06.dat";
+    char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\1000x1000_r02_d06_excit.dat";
+    char rezFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\1000x1000_T2600_f0.dat";
+
 
 /////////////////////////////////////////// Prototypes
 void initialization(void);
@@ -63,13 +68,14 @@ int main()
     initialization();
 
     photoExcitation();
-     FILE *fp;
-     fp = fopen(sysFileExcited, "w");
-     for (int i = 0; i < nPart; i++)
-     {
-         fprintf(fp, "%20.15lf  %20.15lf  %20.15lf  %20.15lf   %20.15lf\n", Medium[i].x, Medium[i].y, Medium[i].z, Medium[i].r, Medium[i].T);
-     }
-     fclose(fp);
+
+    FILE *fp;
+    fp = fopen(sysFileExcited, "w");
+    for (int i = 0; i < nPart; i++)
+    {
+        fprintf(fp, "%20.15lf  %20.15lf  %20.15lf  %20.15lf   %20.15lf\n", Medium[i].x, Medium[i].y, Medium[i].z, Medium[i].r, Medium[i].T);
+    }
+    fclose(fp);
 
 	//*** RELAXATION
     double timeInit = 0.0;
