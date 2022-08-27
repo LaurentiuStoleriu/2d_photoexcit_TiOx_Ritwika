@@ -7,8 +7,8 @@
 
 using namespace alglib;
 
-    const int nPart = 10000;
-    const int nSide = 100;
+    const int nPart = 40000;
+    const int nSide = 200;
     const int nMaxNeigh = 4;
 
     const int nMaxSteps = 1000000;
@@ -20,17 +20,17 @@ using namespace alglib;
     double depth = 0.0;
     int nH, nL;
 
-    const double tempLimDown = 200.0;
+    const double tempLimDown = 300.0;
     const double tempLimUp = 470.0;
     const double tempExcitation = 2600.0;
 
    // const double coefExoTerm = 10;	// deg. increase temp of each neighbour
    // const double coefTerm = 0.005;    //% of temperature difference exchanged at each step
-    //const double coefTermExt =0.001;// 0.0005;// 0.000005;
-	//const double coefTerm_lambda = 0.001;
-	//const double coefTerm_beta = 0.001;
-	//const double coefTerm_s = 0.001;
-	
+	const double coefTermExt = 0.1;// 0.0005;// 0.000005; 
+	const double coefTerm_lambda = 1;
+	const double coefTerm_beta = 2;
+	const double coefTerm_s = 0.7;
+		
 	double deltaQ;
 	double Cp_beta = 154.25; 
 	double Cp_lambda = 161.82;
@@ -52,9 +52,9 @@ using namespace alglib;
 //     char sysFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06.dat";
 //     char sysFileExcited[500] = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_r02_d06_excit.dat";
 //     char rezFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_T2600_f0.dat";
-    char sysFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\100x100_r02_d06_Cryst10x10.dat";
-    char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\100x100_r02_Cryst10x10_d06_excit.dat";
-    char rezFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\100x100_T2600_Cryst10x10_f0.dat";
+    char sysFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\200x200_r02_d06.dat";
+    char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_r02_d06_excit.dat";
+    char rezFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_T2600_f1_cl1_cb10.dat";
 
 
 /////////////////////////////////////////// Prototypes
@@ -86,7 +86,7 @@ int main()
 	int stepCount = 0;
 
     FILE *frez;
-    frez = fopen(rezFile, "w");
+	frez = fopen(rezFile, "w");
 
     while ( (stepCount < nMaxSteps) && (nH > 0) )
 	{
@@ -109,9 +109,9 @@ int main()
 				for (int j = 0; j < noOfNeighbours[i]; j++)			//                   or its neighbours
 				{
 					//deltaQ = coefExoTerm * 1.0;
-					deltaQ = 12000 ; 	//trying with real values
+					deltaQ = 12000; 	//trying with real values
 					Medium[neighbours[i][j]].T += (Medium[neighbours[i][j]].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
-					//Medium[neighbours[i][j]].T += (Medium[neighbours[i][j]].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
+
 				//	Medium[i].T -= deltaQ/Cp_lambda;
 				}
 
@@ -136,8 +136,12 @@ int main()
 			}
 		}
 
-        printf("Time %5.2lf \t Temp %5.2lf \t HS %d \n", sysTime, Medium[0].T, nH);
-        fprintf(frez, "%20.15lf   %d	%5.2lf\n", sysTime, nH, Medium[0].T);
+		stepCount++;
+		if (!(stepCount % 100))
+		{
+			printf("Time %5.2lf \t Temp %5.2lf \t HS %d \n", sysTime, Medium[0].T, nH);
+		}
+        fprintf(frez, "%20.15lf \t %d \t %5.2lf\n", sysTime, nH, Medium[0].T);
     }
     fclose(frez);
 
@@ -260,8 +264,8 @@ void photoExcitation(void)
     double valueToCheck;
 
 	std::random_device rd;
-	std::mt19937_64 gen(rd());    // radnom seed
-    //std::mt19937_64 gen(1);   // fixed seed
+	//std::mt19937_64 gen(rd());    // random seed
+    std::mt19937_64 gen(1);   // fixed seed
 	std::uniform_real_distribution<double> rand_dis(0.0, 1.0);  // use with rand_dis(gen)
 
     // for (int i = 0; i < 10; i++)
@@ -311,75 +315,79 @@ void tempExchange(void)
 
 	for (i = 0; i < nPart; i++)
 	{
-
-		//if (noOfNeighbours[i] < nMaxNeigh)
-		if ((noOfNeighbours[i] < nMaxNeigh))
+		if (noOfNeighbours[i] < nMaxNeigh)
 		{
-			if (Medium[i].r > radiusLS*1.01)
+			deltaQ = (Medium[i].T - tempLimDown) * (nMaxNeigh - noOfNeighbours[i]) * coefTermExt;
+			Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? deltaQ / Cp_lambda : deltaQ / Cp_beta;
+			for (j = 0; j < noOfNeighbours[i]; j++)
 			{
-			//Medium[i].T -= (Medium[i].T - tempLimDown) * (nMaxNeigh - noOfNeighbours[i]) * coefTermExt;
-			//deltaQ = (Medium[i].T - tempLimDown) * (nMaxNeigh - noOfNeighbours[i])*coefTermExt ;
-			//Medium[i].T -=  (Medium[i].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
-// trying with the real values
-			
-			//deltaQ = (Medium[i].T - tempLimDown) * (nMaxNeigh - noOfNeighbours[i])*0.0025 * 10*1*4.8 ;
-				Medium[i].T = (Cp_lambda*Medium[i].T + Cp_air*tempLimDown) / (Cp_lambda+Cp_air);
+				n = neighbours[i][j];
+
+				if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r > radiusLS * 1.01))
+				{
+					Q = (Medium[i].T - Medium[n].T) * coefTerm_lambda;
+				}
+				else
+				{
+					if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+					{
+						Q = (Medium[i].T - Medium[n].T) * coefTerm_s;
+					}
+					else
+					{
+						if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r > radiusLS * 1.01))
+						{
+							Q = (Medium[i].T - Medium[n].T) * coefTerm_s;
+						}
+						else
+						{
+							if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+							{
+								Q = (Medium[i].T - Medium[n].T) * coefTerm_beta;
+							}
+						}
+					}
+				}
+				Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
+				Medium[n].T += (Medium[n].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
 			}
-			else
-			{
-				Medium[i].T = (Cp_beta*Medium[i].T + Cp_air*tempLimDown) / (Cp_beta+Cp_air);
-			}
-			// calculate the T of the bath : RT - Medium [T]
 		}
 		else
 		{
 			for (j = 0; j < noOfNeighbours[i]; j++)
 			{
 				n = neighbours[i][j];
-				
-			
-				//Q = (Medium[i].T - Medium[n].T) * coefTerm;
-				if ((Medium[i].r > radiusLS*1.01) && (Medium[n].r > radiusLS*1.01)) 
+				if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r > radiusLS * 1.01))
 				{
-					//Q = (Medium[i].T - Medium[n].T)*coefTerm_lambda;
-					//Q = (Medium[i].T - Medium[n].T)*0.2*10*1*4.8;
-					Medium[i].T = (Medium[i].T + Medium[n].T) / 2.0;
-					Medium[n].T = (Medium[i].T + Medium[n].T) / 2.0;
+					Q = (Medium[i].T - Medium[n].T) * coefTerm_lambda;
 				}
-				else 
+				else
 				{
-					if ((Medium[i].r > radiusLS*1.01) && (Medium[n].r < radiusHS*1.01)) 
+					if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r < radiusHS * 1.01))
 					{
-						//Q = (Medium[i].T - Medium[n].T)*coefTerm_s;
-						//Q = (Medium[i].T - Medium[n].T)*0.133 * 10*1*4.8;
-						Medium[i].T = (Cp_lambda*Medium[i].T + Cp_beta*Medium[n].T) / (Cp_lambda+Cp_beta);
-						Medium[n].T = (Cp_lambda*Medium[i].T + Cp_beta*Medium[n].T) / (Cp_lambda+Cp_beta);
+						Q = (Medium[i].T - Medium[n].T) * coefTerm_s;
 					}
-					else 
+					else
 					{
-						if ((Medium[i].r < radiusHS*1.01) && (Medium[n].r > radiusLS*1.01)) 
+						if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r > radiusLS * 1.01))
 						{
-							//Q = (Medium[i].T - Medium[n].T)*coefTerm_s;
-							Medium[i].T = (Cp_beta*Medium[i].T + Cp_lambda*Medium[n].T) / (Cp_lambda+Cp_beta);
-							Medium[n].T = (Cp_beta*Medium[i].T + Cp_lambda*Medium[n].T) / (Cp_lambda+Cp_beta);
+							Q = (Medium[i].T - Medium[n].T) * coefTerm_s;
+
 						}
-						else 
-							if ((Medium[i].r < radiusHS*1.01) && (Medium[n].r < radiusHS*1.01)) 
+						else
 						{
-							//Q = (Medium[i].T - Medium[n].T)*coefTerm_beta;
-							//Q = (Medium[i].T - Medium[n].T)*0.4 *10*1*4.8 ;
-							Medium[i].T = (Medium[i].T + Medium[n].T) / 2;
-							Medium[n].T = (Medium[i].T + Medium[n].T) / 2;
+							if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+							{
+								Q = (Medium[i].T - Medium[n].T) * coefTerm_beta;
+							}
 						}
 					}
 				}
 				//Q = ((Medium[i].r > radiusLS*1.01) && (Medium[n].r < radiusHS*1.01)) ? (Medium[i].T - Medium[n].T)*coefTerm_s : (Medium[i].T - Medium[n].T)*coefTerm_lambda;
-				
-				//Medium[i].T -=  (Medium[i].r > radiusLS*1.01) ? Q/Cp_lambda : Q/Cp_beta;
-				//Medium[n].T += (Medium[n].r > radiusLS*1.01) ? Q/Cp_lambda : Q/Cp_beta;
 
-				//Medium[i].T -=  (Medium[i].r > radiusLS*1.01) ? Q/161.821 : Q/154.247;
-				//Medium[n].T += (Medium[n].r > radiusLS*1.01) ? Q/161.821 : Q/154.247;
+				Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
+				Medium[n].T += (Medium[n].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
+
 			}
 		}
 	}

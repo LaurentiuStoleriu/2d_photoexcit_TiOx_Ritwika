@@ -1,9 +1,9 @@
-//#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-const int nPart = 10000;
-const int nSide = 100;
-const int nSideCryst = 10;
+const int nPart = 40000;
+const int nSide = 200;
+const int nSideCryst = 200;
 
 double radius = 0.2;
 double distance = 0.6;
@@ -36,8 +36,8 @@ int main()
     }
 
     FILE *fp;
-    fp = fopen("/home/ritwika/data/1.hc4250_Oct'20/results/systems/100x100_r02_d06_Cryst10x10.dat", "w");
-    //fp = fopen("E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\100x100_r02_d06_Cryst10x10.dat", "w");
+    //fp = fopen("/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06_Cryst10x10.dat", "w");
+    fp = fopen("E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\200x200_r02_d06_Cryst10x10.dat", "w");
     for (int i = 0; i < nPart; i++)
     {
         fprintf(fp, "%20.15lf  %20.15lf  %20.15lf  %20.15lf %d\n", Medium[i].x, Medium[i].y, Medium[i].z, Medium[i].r, Medium[i].idxCryst);
