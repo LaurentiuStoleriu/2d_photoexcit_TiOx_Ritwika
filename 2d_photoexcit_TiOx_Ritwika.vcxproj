@@ -142,7 +142,7 @@
     <ClCompile Include="alglibinternal.cpp" />
     <ClCompile Include="alglibmisc.cpp" />
     <ClCompile Include="ap.cpp" />
-    <ClCompile Include="main_final_microcrystal_2d.cpp" />
+    <ClCompile Include="main_sept.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="alglibinternal.h" />
