@@ -324,7 +324,7 @@ double fInvers(double x)
 void tempExchange(void)
 {
 	int i, j, n;
-	double Q;
+	double Q = 0.0;
 
 	for (int i = 0; i < nPart; i++)
 	{
@@ -359,10 +359,10 @@ void tempExchange(void)
 						}
 						else
 						{
-							if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
-							{
+							//if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+							//{
 								Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_beta;
-							}
+							//}
 						}
 					}
 				}
@@ -393,10 +393,10 @@ void tempExchange(void)
 						}
 						else
 						{
-							if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
-							{
+							//if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+							//{
 								Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_beta;
-							}
+							//}
 						}
 					}
 				}
