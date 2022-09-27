@@ -120,13 +120,12 @@ int main()
 			{
 				Medium[i].r = radiusLS;
 
-				//				Medium[i].T += CoefExoTerm * nMaxNeigh;			// exothermic H-to-L either by heating the particle
-				// 				deltaQ = coefExoTerm * 1.0;						//                   or its neighbours
-				deltaQ = 10.0; 									//trying with real values
+				//Medium[i].T += CoefExoTerm * nMaxNeigh;			// exothermic H-to-L either by heating the particle
+				//deltaQ = coefExoTerm * 1.0;						//                   or its neighbours
+				deltaQ = 1000.0; 									//trying with real values
 				for (int j = 0; j < noOfNeighbours[i]; j++)
 				{
 					Medium[neighbours[i][j]].T += (Medium[neighbours[i][j]].r > radiusLS * 1.01) ? deltaQ / Cp_lambda : deltaQ / Cp_beta;
-					//	Medium[i].T -= deltaQ/Cp_lambda;
 				}
 
 				nH--; nL++;
@@ -136,13 +135,12 @@ int main()
 				if ((Medium[i].r < 1.05 * radiusLS) && (tempAtBegin[i] >= tempLimUp))
 				{
 					Medium[i].r = radiusHS;
-					// 					deltaQ = coefExoTerm * 1.0;
-					// 					Medium[neighbours[i][j]].T -= (Medium[neighbours[i][j]].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
-					deltaQ = 10.0; 	//trying with real values
-					for (int j = 0; j < noOfNeighbours[i]; j++)			//                   or its neighbours
+					//deltaQ = coefExoTerm * 1.0;
+					//Medium[neighbours[i][j]].T -= (Medium[neighbours[i][j]].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
+					deltaQ = 1000.0; 	//trying with real values
+					for (int j = 0; j < noOfNeighbours[i]; j++)
 					{
 						Medium[neighbours[i][j]].T -= (Medium[neighbours[i][j]].r > radiusLS * 1.01) ? deltaQ / Cp_lambda : deltaQ / Cp_beta;
-						//Medium[i].T += deltaQ/Cp_beta;
 					}
 
 					nH++; nL--;
