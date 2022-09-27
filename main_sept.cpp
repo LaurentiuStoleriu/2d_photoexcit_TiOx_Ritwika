@@ -34,8 +34,7 @@ using namespace alglib;
 	double deltaQ;
 	double Cp_beta = 154.25; 
 	double Cp_lambda = 161.82;
-	double Cp_air = 29;
-
+	double Cp_air = 29.0;
 
     struct sReadData
     {
@@ -54,6 +53,7 @@ using namespace alglib;
 	char sysFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\200x200_r02_d06.dat";
 	char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_r02_d06_excit.dat";
 	char rezFile[500]        = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_T2600_f1_H10_c0p01.dat";
+	char pathUCD[500]		 = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_T2600_f1_H10_c0p01";
 
 /////////////////////////////////////////// Prototypes
 void initialization(void);
@@ -61,10 +61,13 @@ void alglibFunctionNeighbours(void);
 void photoExcitation(void);
 double fInvers(double x);
 void tempExchange(void);
+void saveUCD(char* fisSaveVis);
 //////////////////////////////////////////////////////
 
 int main()
 {
+	char fisSaveVis[500];
+
     initialization();
 
     photoExcitation();
@@ -133,11 +136,13 @@ int main()
 			}
 		}
 
-		if (!((int)sysTime%100))
+		if (!( (int)(sysTime/stepTime) % 100))
 		{
 			printf("Time %5.2lf \t Temp %5.2lf \t HS %d \n", sysTime, Medium[0].T, nH);
+			sprintf(fisSaveVis, "%s_%07d.inp", pathUCD, (int)(sysTime / stepTime));
+			saveUCD(fisSaveVis);
 		}
-        fprintf(frez, "%20.15lf   %d	%5.2lf\n", sysTime, nH, Medium[0].T);
+        fprintf(frez, "%20.15lf   %d\n", sysTime, nH);
     }
     fclose(frez);
 
@@ -318,7 +323,7 @@ void tempExchange(void)
 	{
 		if (noOfNeighbours[i] < nMaxNeigh)
 		{	
-            deltaQ = (tempAtBegin[i]- tempLimDown) * (nMaxNeigh - noOfNeighbours[i]) * coefTermExt ;
+            deltaQ = (tempAtBegin[i] - tempLimDown) * (nMaxNeigh - noOfNeighbours[i]) * coefTermExt ;
 			Medium[i].T -=  (Medium[i].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
 			for (j = 0; j < noOfNeighbours[i]; j++)
 			{
@@ -393,3 +398,97 @@ void tempExchange(void)
 		}
 	}
 }
+
+//////////////////////////////////////////////////////////////////////////
+
+void saveUCD(char * fisSaveVis)
+{
+
+		int p, i, j, v1, v2;
+		int count = 0;
+		int* count_switched;
+		double d1;
+
+		count_switched = (int*)calloc(nPart, sizeof(int));
+
+		for (p = 0; p < nPart; p++)
+		{
+			count_switched[p] = 0;
+
+			for (i = 0; i < noOfNeighbours[p]; i++)
+			{
+				if (Medium[neighbours[p][i]].r > radiusLS * 1.01)
+				{
+					count_switched[p]++;
+				}
+			}
+
+			for (i = 0; i < noOfNeighbours[p] - 1; i++)
+			{
+				for (j = i + 1; j < noOfNeighbours[p]; j++)
+				{
+					v1 = neighbours[p][i];
+					v2 = neighbours[p][j];
+
+					d1 = sqrt((Medium[v1].x - Medium[v2].x) * (Medium[v1].x - Medium[v2].x) + (Medium[v1].y - Medium[v2].y) * (Medium[v1].y - Medium[v2].y) + (Medium[v1].z - Medium[v2].z) * (Medium[v1].z - Medium[v2].z));
+
+					if ((d1 < 1.9)) //to avoid two neighbours both on Ox or Oy
+					{
+						count++;
+					}
+				}
+			}
+		}
+
+		//char fis_save_vis[500];
+		//sprintf(fis_save_vis, "%s_ucd_%06d.inp", file, (int)timp);
+
+		FILE* fpout;
+		fpout = fopen(fisSaveVis, "w");
+
+		fprintf(fpout, "%d %d 1 0 0\n", nPart, count);
+		printf("SAVING UCD %d %d\n", nPart, count);
+
+		for (i = 0; i < nPart; i++)
+		{
+			fprintf(fpout, "%d %f %f %f\n", i + 1, Medium[i].x, Medium[i].y, Medium[i].z);
+		}
+
+		count = 0;
+		for (p = 0; p < nPart; p++)
+		{
+			for (i = 0; i < noOfNeighbours[p] - 1; i++)
+			{
+				for (j = i + 1; j < noOfNeighbours[p]; j++)
+				{
+					v1 = neighbours[p][i];
+					v2 = neighbours[p][j];
+
+					d1 = sqrt((Medium[v1].x - Medium[v2].x) * (Medium[v1].x - Medium[v2].x) + (Medium[v1].y - Medium[v2].y) * (Medium[v1].y - Medium[v2].y) + (Medium[v1].z - Medium[v2].z) * (Medium[v1].z - Medium[v2].z));
+
+					if ((d1 < 1.9)) //to avoid two neighbours both on Ox or Oy
+					{
+						count++;
+						fprintf(fpout, "%d 1 tri  %d  %d  %d \n", count, p + 1, v1 + 1, v2 + 1);
+					}
+
+				}
+			}
+		}
+
+		fprintf(fpout, "3 1 1 1\n");
+		fprintf(fpout, "radius, nm\n");
+		fprintf(fpout, "crystallite, au\n");
+		fprintf(fpout, "Temperature, K\n");
+
+		for (i = 0; i < nPart; i++)
+		{
+			fprintf(fpout, "%d %lf %d %f\n", i + 1, Medium[i].r, Medium[i].idxCryst, Medium[i].T);
+		}
+
+		fclose(fpout);
+
+		free(count_switched);
+}
+
+//////////////////////////////////////////////////////////////////////////
