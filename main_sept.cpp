@@ -7,9 +7,9 @@
 
 using namespace alglib;
 
-const int nPart = 81; // 40000;
-const int nSide = 9; // 200;
-const int nMaxNeigh = 4;
+const int nPart = 40000;
+const int nSide = 200;
+const int nMaxNeigh = 8;
 
 const int nMaxSteps = 1000000;
 
@@ -26,15 +26,20 @@ const double tempExcitation = 2600.0;
 
 // const double coefExoTerm = 10;	// deg. increase temp of each neighbour
 // const double coefTerm = 0.005;    //% of temperature difference exchanged at each step
-const double coefTermExt = 0.001;// 0.0005;// 0.000005;
-const double coefTerm_lambda = 0.01;
-const double coefTerm_beta = 0.01;
-const double coefTerm_s = 0.01;
+const double coefTermExt = 0.1;// 0.0005;// 0.000005;
+const double coefTerm_lambda = 1.0;
+const double coefTerm_beta = 1.0;
+const double coefTerm_s = 1.0;
 
 double deltaQ;
 double Cp_beta = 154.25;
 double Cp_lambda = 161.82;
 double Cp_air = 29.0;
+
+std::random_device rd;
+std::mt19937_64 gen(rd());    // random seed
+//std::mt19937_64 gen(1);   // fixed seed
+std::normal_distribution<double> normalRandDis{ 1.0, 0.1 };  // use with normalRandDis(gen)
 
 struct sReadData
 {
@@ -50,10 +55,10 @@ double tempAtBegin[nPart];
 //char sysFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/systems/200x200_r02_d06.dat";
 //char sysFileExcited[500] = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_r02_d06_excit.dat";
 //char rezFile[500]        = "/home/ritwika/data/1.hc4250_Oct'20/results/200x200_T2600_f1_H10_c0p01.dat";
-char sysFile[500] = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\9x9_r02_d06.dat";
-char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\9x9_r02_d06_excit.dat";
-char rezFile[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\9x9_T2600_f1_H10_c0p01.dat";
-char pathUCD[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\9x9_T2600_f1_H10_c0p01";
+char sysFile[500] = "E:\\Stoleriu\\C\\special\\3d\\generare\\2022\\TiOX\\200x200_r02_d06.dat";
+char sysFileExcited[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_r02_d06_excit.dat";
+char rezFile[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_T2600_f1_H10_c0p01.dat";
+char pathUCD[500] = "E:\\Stoleriu\\C\\special\\3d\\res\\2022\\elastic\\TiOX\\200x200_T2600_f1_H10_c0p01";
 
 /////////////////////////////////////////// Prototypes
 void initialization(void);
@@ -70,21 +75,21 @@ int main()
 
 	initialization();
 
-	//photoExcitation();
-	for (int i = 0; i < nPart; i++)
-	{
-		if ( (i == 39) || (i == 41) )
-		{
-			Medium[i].r = radiusHS;
-			Medium[i].T = tempExcitation;
-			nH++; nL--;
-		}
-		else
-		{
-			Medium[i].r = radiusLS;
-			Medium[i].T = tempLimDown;
-		}
-	}
+	photoExcitation();
+// 	for (int i = 0; i < nPart; i++) // for 9x9 - excite two particles
+// 	{
+// 		if ( (i == 39) || (i == 41) )
+// 		{
+// 			Medium[i].r = radiusHS;
+// 			Medium[i].T = tempExcitation;
+// 			nH++; nL--;
+// 		}
+// 		else
+// 		{
+// 			Medium[i].r = radiusLS;
+// 			Medium[i].T = tempLimDown;
+// 		}
+// 	}
 
 	FILE* fp;
 	fp = fopen(sysFileExcited, "w");
@@ -120,9 +125,7 @@ int main()
 			{
 				Medium[i].r = radiusLS;
 
-				//Medium[i].T += CoefExoTerm * nMaxNeigh;			// exothermic H-to-L either by heating the particle
-				//deltaQ = coefExoTerm * 1.0;						//                   or its neighbours
-				deltaQ = 1000.0; 									//trying with real values
+				deltaQ = 10.0; 											//trying with real values
 				for (int j = 0; j < noOfNeighbours[i]; j++)
 				{
 					Medium[neighbours[i][j]].T += (Medium[neighbours[i][j]].r > radiusLS * 1.01) ? deltaQ / Cp_lambda : deltaQ / Cp_beta;
@@ -135,9 +138,8 @@ int main()
 				if ((Medium[i].r < 1.05 * radiusLS) && (tempAtBegin[i] >= tempLimUp))
 				{
 					Medium[i].r = radiusHS;
-					//deltaQ = coefExoTerm * 1.0;
-					//Medium[neighbours[i][j]].T -= (Medium[neighbours[i][j]].r > radiusLS*1.01) ? deltaQ/Cp_lambda : deltaQ/Cp_beta;
-					deltaQ = 1000.0; 	//trying with real values
+
+					deltaQ = 10.0; 										//trying with real values
 					for (int j = 0; j < noOfNeighbours[i]; j++)
 					{
 						Medium[neighbours[i][j]].T -= (Medium[neighbours[i][j]].r > radiusLS * 1.01) ? deltaQ / Cp_lambda : deltaQ / Cp_beta;
@@ -148,11 +150,11 @@ int main()
 			}
 		}
 
-		if (!((int)(sysTime / stepTime) % 10))
+		if (!((int)(sysTime / stepTime) % 30))
 		{
 			printf("Time %5.2lf \t Temp %5.2lf \t HS %d \n", sysTime, Medium[0].T, nH);
-			sprintf(fisSaveVis, "%s_%07d.inp", pathUCD, (int)(sysTime / stepTime));
-			saveUCD(fisSaveVis);
+			//sprintf(fisSaveVis, "%s_%07d.inp", pathUCD, (int)(sysTime / stepTime));
+			//saveUCD(fisSaveVis);
 		}
 		fprintf(frez, "%20.15lf   %d\n", sysTime, nH);
 	}
@@ -229,18 +231,18 @@ void alglibFunctionNeighbours(void)
 
 		ae_int_t k;
 
-		distance = 1.1 * (2.0 * radius + L);
+		distance = 1.1 * sqrt(2.0) * (2.0 * radius + L);
 
 		k = kdtreequeryrnn(kdt, x, distance, false);
 
 		noOfNeighbours[i] = (int)k;
 
-		// 		if (noOfNeighbours[i] + 1 > n_max_vec - 1)
-		// 		{
-		// 			printf("\n\n TOO MANY NEIGHBOURS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n");
-		// 			break;
-		// 		}
-		// 		else
+// 		if (noOfNeighbours[i] + 1 > nMaxNeigh - 1)
+// 		{
+// 			printf("\n\n TOO MANY NEIGHBOURS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n");
+// 			break;
+// 		}
+// 		else
 		{
 			kdtreequeryresultstags(kdt, indexes);
 
@@ -275,8 +277,8 @@ void photoExcitation(void)
 	double valueToCheck;
 
 	std::random_device rd;
-	//std::mt19937_64 gen(rd());    // radnom seed
-	std::mt19937_64 gen(1);   // fixed seed
+	std::mt19937_64 gen(rd());    // random seed
+	//std::mt19937_64 gen(1);   // fixed seed
 	std::uniform_real_distribution<double> rand_dis(0.0, 1.0);  // use with rand_dis(gen)
 
 	// for (int i = 0; i < 10; i++)
@@ -323,6 +325,7 @@ void tempExchange(void)
 {
 	int i, j, n;
 	double Q = 0.0;
+	double randomizeQ;
 
 	for (int i = 0; i < nPart; i++)
 	{
@@ -331,10 +334,11 @@ void tempExchange(void)
 
 	for (i = 0; i < nPart; i++)
 	{
-		if (noOfNeighbours[i] < nMaxNeigh)
-		{
+// 		if (noOfNeighbours[i] < nMaxNeigh)
+// 		{
 			deltaQ = (tempAtBegin[i] - tempLimDown) * (nMaxNeigh - noOfNeighbours[i]) * coefTermExt;
 			Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? deltaQ / Cp_lambda : deltaQ / Cp_beta;
+
 			for (j = 0; j < noOfNeighbours[i]; j++)
 			{
 				n = neighbours[i][j];
@@ -364,46 +368,47 @@ void tempExchange(void)
 						}
 					}
 				}
-				Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
-				Medium[n].T += (Medium[n].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
-			}
-		}
-		else
-		{
-			for (j = 0; j < noOfNeighbours[i]; j++)
-			{
-				n = neighbours[i][j];
-				if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r > radiusLS * 1.01))
-				{
-					Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_lambda;
-				}
-				else
-				{
-					if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r < radiusHS * 1.01))
-					{
-						Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_s;
-					}
-					else
-					{
-						if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r > radiusLS * 1.01))
-						{
-							Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_s;
-						}
-						else
-						{
-							//if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
-							//{
-								Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_beta;
-							//}
-						}
-					}
-				}
-				//Q = ((Medium[i].r > radiusLS*1.01) && (Medium[n].r < radiusHS*1.01)) ? (Medium[i].T - Medium[n].T)*coefTerm_s : (Medium[i].T - Medium[n].T)*coefTerm_lambda;
-
-				Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
-				Medium[n].T += (Medium[n].r > radiusLS * 1.01) ? Q / Cp_lambda : Q / Cp_beta;
-			}
-		}
+				randomizeQ = normalRandDis(gen);
+				Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? Q * randomizeQ / Cp_lambda : Q * randomizeQ / Cp_beta;
+				Medium[n].T += (Medium[n].r > radiusLS * 1.01) ? Q * randomizeQ / Cp_lambda : Q * randomizeQ / Cp_beta;
+ 			}
+// 		}
+// 		else
+// 		{
+// 			for (j = 0; j < noOfNeighbours[i]; j++)
+// 			{
+// 				n = neighbours[i][j];
+// 				if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r > radiusLS * 1.01))
+// 				{
+// 					Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_lambda;
+// 				}
+// 				else
+// 				{
+// 					if ((Medium[i].r > radiusLS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+// 					{
+// 						Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_s;
+// 					}
+// 					else
+// 					{
+// 						if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r > radiusLS * 1.01))
+// 						{
+// 							Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_s;
+// 						}
+// 						else
+// 						{
+// 							//if ((Medium[i].r < radiusHS * 1.01) && (Medium[n].r < radiusHS * 1.01))
+// 							//{
+// 								Q = (tempAtBegin[i] - tempAtBegin[n]) * coefTerm_beta;
+// 							//}
+// 						}
+// 					}
+// 				}
+// 
+// 				randomizeQ = normalRandDis(gen);
+// 				Medium[i].T -= (Medium[i].r > radiusLS * 1.01) ? Q * randomizeQ / Cp_lambda : Q * randomizeQ / Cp_beta;
+// 				Medium[n].T += (Medium[n].r > radiusLS * 1.01) ? Q * randomizeQ / Cp_lambda : Q * randomizeQ / Cp_beta;
+// 			}
+// 		}
 	}
 }
 
