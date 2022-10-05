@@ -135,11 +135,11 @@ int main()
 			}
 		}
 
-		if (!((int)((sysTime-stepTime) / stepTime) % 50))
+		if (!((int)((sysTime-stepTime) / stepTime) % 1))
 		{
 			printf("Time %5.2lf \t Temp %5.2lf \t HS %d \n", sysTime, Medium[0].T, nH);
-			//sprintf(fisSaveVis, "%s_%07d.inp", pathUCD, (int)(sysTime / stepTime));
-			//saveUCD(fisSaveVis);
+			sprintf(fisSaveVis, "%s_%07d.inp", pathUCD, (int)(sysTime / stepTime));
+			saveUCD(fisSaveVis);
 		}
 		fprintf(frez, "%20.15lf   %d\n", sysTime, nH);
 	}
@@ -400,7 +400,7 @@ void saveUCD(char* fisSaveVis)
 	FILE* fpout;
 	fpout = fopen(fisSaveVis, "w");
 
-	fprintf(fpout, "%d %d 1 0 0\n", nPart, count);
+	fprintf(fpout, "%d %d 3 0 0\n", nPart, count);
 	printf("SAVING UCD %d %d\n", nPart, count);
 
 	for (i = 0; i < nPart; i++)
